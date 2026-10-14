@@ -41,7 +41,9 @@ import com.github.damontecres.wholphin.ui.util.StreamFormatting.formatAudioCodec
 import com.github.damontecres.wholphin.ui.util.StreamFormatting.formatSubtitleCodec
 import com.github.damontecres.wholphin.ui.util.StreamFormatting.formatVideoRange
 import com.github.damontecres.wholphin.ui.util.StreamFormatting.resolutionString
+import com.github.damontecres.wholphin.util.displayedVideoSize
 import com.github.damontecres.wholphin.util.languageName
+import com.github.damontecres.wholphin.util.video3dLabel
 import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.MediaStream
 
@@ -74,17 +76,22 @@ fun VideoStreamDetails(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier,
     ) {
+        val video3dFormat = source?.video3dFormat
         val video =
-            remember(videoStream) {
+            remember(videoStream, video3dFormat) {
                 videoStream
                     ?.let {
                         val width = it.width
                         val height = it.height
                         val resName =
                             if (width != null && height != null) {
+                                // Full frame 3D is coded at twice the size of the picture that is
+                                // shown, so a full side-by-side 1080p film would read as "4K"
+                                val (displayedWidth, displayedHeight) =
+                                    displayedVideoSize(width, height, video3dFormat)
                                 resolutionString(
-                                    width,
-                                    height,
+                                    displayedWidth,
+                                    displayedHeight,
                                     videoStream.isInterlaced,
                                 )
                             } else {
@@ -107,6 +114,9 @@ fun VideoStreamDetails(
             )
         }
         videoStream?.codec?.uppercase()?.let {
+            StreamLabel(it)
+        }
+        video3dLabel(video3dFormat)?.let {
             StreamLabel(it)
         }
 

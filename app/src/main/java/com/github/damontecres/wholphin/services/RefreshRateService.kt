@@ -9,6 +9,7 @@ import android.view.Display
 import com.github.damontecres.wholphin.MainActivity
 import com.github.damontecres.wholphin.ui.showToast
 import com.github.damontecres.wholphin.util.WholphinDispatchers
+import com.github.damontecres.wholphin.util.displayedVideoSize
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
@@ -154,27 +155,6 @@ class RefreshRateService
         }
 
         companion object {
-            /**
-             * The size of the picture that is actually shown on the display.
-             *
-             * Full frame 3D packs both eyes into one frame at their native size, so the coded
-             * size is twice the size of the picture the display shows. Mode selection has to use
-             * the displayed size, otherwise a 3840x1080 full side-by-side stream can never match
-             * any mode on a 1080p display and no switch happens at all.
-             *
-             * Half formats are already stored at the displayed size and are left alone.
-             */
-            fun displayedVideoSize(
-                width: Int,
-                height: Int,
-                video3dFormat: Video3dFormat?,
-            ): Pair<Int, Int> =
-                when (video3dFormat) {
-                    Video3dFormat.FULL_SIDE_BY_SIDE -> width / 2 to height
-                    Video3dFormat.FULL_TOP_AND_BOTTOM -> width to height / 2
-                    else -> width to height
-                }
-
             /**
              * Find the best display mode for the given stream & preferences
              *
