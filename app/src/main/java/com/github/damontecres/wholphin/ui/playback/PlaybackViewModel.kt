@@ -605,6 +605,7 @@ class PlaybackViewModel
                         subtitleStreams = subtitleStreams,
                         chapters = chapters,
                         trickPlayInfo = trickPlayInfo,
+                        video3dFormat = mediaSource?.video3dFormat,
                     )
                 }
                 withContext(WholphinDispatchers.Main) {

@@ -173,15 +173,21 @@ fun PlaybackPageContent(
 
     var playbackDialog by remember { mutableStateOf<PlaybackDialogType?>(null) }
 
-    var contentScale by remember(playerBackend) {
-        mutableStateOf(
-            if (playerBackend == PlayerBackend.MPV) {
+    // Reset any manual choice when the player or the media source changes
+    var contentScaleOverride by
+        remember(playerBackend, state.currentMediaInfo.sourceId) {
+            mutableStateOf<ContentScale?>(null)
+        }
+    val contentScale =
+        contentScaleOverride
+            ?: if (playerBackend == PlayerBackend.MPV) {
                 ContentScale.FillBounds
             } else {
-                prefs.globalContentScale.scale
-            },
-        )
-    }
+                autoContentScaleFor(
+                    video3dFormat = state.currentMediaInfo.video3dFormat,
+                    default = prefs.globalContentScale.scale,
+                )
+            }
     var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
     LaunchedEffect(playbackSpeed) { player.setPlaybackSpeed(playbackSpeed) }
 
@@ -281,7 +287,7 @@ fun PlaybackPageContent(
             }
 
             is PlaybackAction.Scale -> {
-                contentScale = it.scale
+                contentScaleOverride = it.scale
             }
 
             PlaybackAction.ShowDebug -> {
