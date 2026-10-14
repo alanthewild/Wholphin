@@ -3,10 +3,13 @@ package com.github.damontecres.wholphin.ui.util
 import android.content.res.Resources
 import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
+import com.github.damontecres.wholphin.util.displayedVideoSize
 import com.github.damontecres.wholphin.util.languageName
 import com.github.damontecres.wholphin.util.profile.Codec
+import com.github.damontecres.wholphin.util.video3dLabel
 import org.jellyfin.sdk.model.api.MediaStream
 import org.jellyfin.sdk.model.api.MediaStreamType
+import org.jellyfin.sdk.model.api.Video3dFormat
 import org.jellyfin.sdk.model.api.VideoRange
 import org.jellyfin.sdk.model.api.VideoRangeType
 
@@ -168,5 +171,42 @@ object StreamFormatting {
             }
         }
         return name
+    }
+
+    /**
+     * The video description for a media source: resolution, video range, codec and stereoscopic
+     * packing, e.g. "1080p HDR, HEVC, 3D FSBS".
+     *
+     * Built here rather than taken from the server's MediaStream.displayTitle, which is derived
+     * from the coded size and so reports full frame 3D as 4K.
+     */
+    fun videoStreamSummary(
+        resources: Resources,
+        videoStream: MediaStream?,
+        video3dFormat: Video3dFormat?,
+    ): String? {
+        if (videoStream == null) return null
+        val width = videoStream.width
+        val height = videoStream.height
+        val resName =
+            if (width != null && height != null) {
+                val (displayedWidth, displayedHeight) =
+                    displayedVideoSize(width, height, video3dFormat)
+                resolutionString(displayedWidth, displayedHeight, videoStream.isInterlaced)
+            } else {
+                null
+            }
+        val range =
+            formatVideoRange(
+                resources,
+                videoStream.videoRange,
+                videoStream.videoRangeType,
+                videoStream.videoDoViTitle,
+            )
+        return listOfNotNull(
+            resName.concatWithSpace(range)?.ifBlank { null },
+            videoStream.codec?.uppercase(),
+            video3dLabel(video3dFormat),
+        ).joinToString(", ").ifBlank { null }
     }
 }
