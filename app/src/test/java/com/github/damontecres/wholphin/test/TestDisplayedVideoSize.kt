@@ -2,6 +2,7 @@ package com.github.damontecres.wholphin.test
 
 import com.github.damontecres.wholphin.services.DisplayMode
 import com.github.damontecres.wholphin.services.RefreshRateService
+import com.github.damontecres.wholphin.util.displayedVideoSize
 import org.jellyfin.sdk.model.api.Video3dFormat
 import org.junit.Assert
 import org.junit.Test
@@ -22,14 +23,14 @@ class TestDisplayedVideoSize {
 
     @Test
     fun twoDimensionalIsUnchanged() {
-        Assert.assertEquals(1920 to 1080, RefreshRateService.displayedVideoSize(1920, 1080, null))
+        Assert.assertEquals(1920 to 1080, displayedVideoSize(1920, 1080, null))
     }
 
     @Test
     fun fullSideBySideHalvesTheWidth() {
         Assert.assertEquals(
             1920 to 1080,
-            RefreshRateService.displayedVideoSize(3840, 1080, Video3dFormat.FULL_SIDE_BY_SIDE),
+            displayedVideoSize(3840, 1080, Video3dFormat.FULL_SIDE_BY_SIDE),
         )
     }
 
@@ -37,7 +38,7 @@ class TestDisplayedVideoSize {
     fun fullTopAndBottomHalvesTheHeight() {
         Assert.assertEquals(
             1920 to 1080,
-            RefreshRateService.displayedVideoSize(1920, 2160, Video3dFormat.FULL_TOP_AND_BOTTOM),
+            displayedVideoSize(1920, 2160, Video3dFormat.FULL_TOP_AND_BOTTOM),
         )
     }
 
@@ -45,11 +46,11 @@ class TestDisplayedVideoSize {
     fun halfFormatsAreUnchanged() {
         Assert.assertEquals(
             1920 to 1080,
-            RefreshRateService.displayedVideoSize(1920, 1080, Video3dFormat.HALF_SIDE_BY_SIDE),
+            displayedVideoSize(1920, 1080, Video3dFormat.HALF_SIDE_BY_SIDE),
         )
         Assert.assertEquals(
             1920 to 1080,
-            RefreshRateService.displayedVideoSize(1920, 1080, Video3dFormat.HALF_TOP_AND_BOTTOM),
+            displayedVideoSize(1920, 1080, Video3dFormat.HALF_TOP_AND_BOTTOM),
         )
     }
 
@@ -60,7 +61,7 @@ class TestDisplayedVideoSize {
     @Test
     fun fullSideBySideMatchesAModeOnA1080pPanel() {
         val (width, height) =
-            RefreshRateService.displayedVideoSize(3840, 1080, Video3dFormat.FULL_SIDE_BY_SIDE)
+            displayedVideoSize(3840, 1080, Video3dFormat.FULL_SIDE_BY_SIDE)
         val result =
             RefreshRateService.findDisplayMode(
                 displayModes = PANEL_1080P,
