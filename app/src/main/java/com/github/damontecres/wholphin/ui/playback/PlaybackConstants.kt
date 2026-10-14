@@ -5,6 +5,7 @@ import com.github.damontecres.wholphin.R
 import com.github.damontecres.wholphin.preferences.PrefContentScale
 import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.CollectionType
+import org.jellyfin.sdk.model.api.Video3dFormat
 
 val playbackSpeedOptions = listOf(".25", ".5", ".75", "1.0", "1.25", "1.5", "1.75", "2.0")
 
@@ -18,6 +19,30 @@ val playbackScaleOptions =
         ContentScale.FillWidth to R.string.content_scale_fill_width,
         ContentScale.FillHeight to R.string.content_scale_fill_height,
     )
+
+/**
+ * Chooses the [ContentScale] to start playback with, based on the stereoscopic packing of the source.
+ *
+ * Full frame 3D (full side-by-side, full top-and-bottom) stores both eyes at their native size, so
+ * the frame is twice as wide or twice as tall as the picture it represents. It has to be squeezed
+ * back onto the display's aspect ratio so a 3D TV in side-by-side/top-and-bottom mode can stretch
+ * each eye back out again. Half formats are already stored at the display aspect ratio, so they are
+ * left alone.
+ *
+ * Sources that already carry a corrected display aspect ratio are unaffected: their pixel aspect
+ * ratio makes [ContentScale.Fit] and [ContentScale.FillBounds] produce the same result.
+ */
+fun autoContentScaleFor(
+    video3dFormat: Video3dFormat?,
+    default: ContentScale,
+): ContentScale =
+    when (video3dFormat) {
+        Video3dFormat.FULL_SIDE_BY_SIDE,
+        Video3dFormat.FULL_TOP_AND_BOTTOM,
+        -> ContentScale.FillBounds
+
+        else -> default
+    }
 
 val PrefContentScale.scale: ContentScale
     get() =

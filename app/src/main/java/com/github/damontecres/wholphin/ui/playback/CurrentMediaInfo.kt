@@ -9,6 +9,7 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.MediaStreamType
 import org.jellyfin.sdk.model.api.TrickplayInfo
+import org.jellyfin.sdk.model.api.Video3dFormat
 import org.jellyfin.sdk.model.extensions.ticks
 
 /**
@@ -23,9 +24,13 @@ data class CurrentMediaInfo(
     val subtitleStreams: List<SimpleMediaStream>,
     val chapters: List<Chapter>,
     val trickPlayInfo: TrickplayInfo?,
+    /**
+     * The stereoscopic packing of the media source, if the server detected one
+     */
+    val video3dFormat: Video3dFormat? = null,
 ) {
     companion object {
-        val EMPTY = CurrentMediaInfo(null, null, listOf(), listOf(), listOf(), null)
+        val EMPTY = CurrentMediaInfo(null, null, listOf(), listOf(), listOf(), null, null)
     }
 }
 
