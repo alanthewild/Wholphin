@@ -36,14 +36,10 @@ import com.github.damontecres.wholphin.ui.playback.audioStreamCount
 import com.github.damontecres.wholphin.ui.playback.embeddedSubtitleCount
 import com.github.damontecres.wholphin.ui.playback.externalSubtitlesCount
 import com.github.damontecres.wholphin.ui.theme.WholphinTheme
-import com.github.damontecres.wholphin.ui.util.StreamFormatting.concatWithSpace
 import com.github.damontecres.wholphin.ui.util.StreamFormatting.formatAudioCodec
 import com.github.damontecres.wholphin.ui.util.StreamFormatting.formatSubtitleCodec
-import com.github.damontecres.wholphin.ui.util.StreamFormatting.formatVideoRange
-import com.github.damontecres.wholphin.ui.util.StreamFormatting.resolutionString
-import com.github.damontecres.wholphin.util.displayedVideoSize
+import com.github.damontecres.wholphin.ui.util.StreamFormatting.videoStreamSummary
 import com.github.damontecres.wholphin.util.languageName
-import com.github.damontecres.wholphin.util.video3dLabel
 import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.MediaStream
 
@@ -79,45 +75,15 @@ fun VideoStreamDetails(
         val video3dFormat = source?.video3dFormat
         val video =
             remember(videoStream, video3dFormat) {
-                videoStream
-                    ?.let {
-                        val width = it.width
-                        val height = it.height
-                        val resName =
-                            if (width != null && height != null) {
-                                // Full frame 3D is coded at twice the size of the picture that is
-                                // shown, so a full side-by-side 1080p film would read as "4K"
-                                val (displayedWidth, displayedHeight) =
-                                    displayedVideoSize(width, height, video3dFormat)
-                                resolutionString(
-                                    displayedWidth,
-                                    displayedHeight,
-                                    videoStream.isInterlaced,
-                                )
-                            } else {
-                                null
-                            }
-                        val range =
-                            formatVideoRange(
-                                resources,
-                                it.videoRange,
-                                it.videoRangeType,
-                                it.videoDoViTitle,
-                            )
-                        resName.concatWithSpace(range)
-                    }
+                videoStreamSummary(resources, videoStream, video3dFormat)
+                    ?.split(", ")
+                    .orEmpty()
             }
-        video?.let {
+        video.forEachIndexed { index, label ->
             StreamLabel(
-                text = it,
-                count = numberOfVersions,
+                text = label,
+                count = if (index == 0) numberOfVersions else 0,
             )
-        }
-        videoStream?.codec?.uppercase()?.let {
-            StreamLabel(it)
-        }
-        video3dLabel(video3dFormat)?.let {
-            StreamLabel(it)
         }
 
         val audioCount = remember(source) { source?.audioStreamCount ?: 0 }

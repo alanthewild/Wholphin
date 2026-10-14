@@ -70,6 +70,7 @@ import com.github.damontecres.wholphin.ui.formatBitrate
 import com.github.damontecres.wholphin.ui.isNotNullOrBlank
 import com.github.damontecres.wholphin.ui.playback.SimpleMediaStream
 import com.github.damontecres.wholphin.ui.roundMinutes
+import com.github.damontecres.wholphin.ui.util.StreamFormatting.videoStreamSummary
 import com.github.damontecres.wholphin.util.ExceptionHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -618,7 +619,11 @@ fun chooseVersionParams(
                         val text =
                             remember {
                                 buildList {
-                                    videoStream?.displayTitle?.let(::add)
+                                    videoStreamSummary(
+                                        resources,
+                                        videoStream,
+                                        source.video3dFormat,
+                                    )?.let(::add)
                                     source.bitrate?.let(::formatBitrate)?.let(::add)
                                 }.joinToString(", ")
                             }
