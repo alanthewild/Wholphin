@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jellyfin.sdk.model.api.MediaStream
 import org.jellyfin.sdk.model.api.MediaStreamType
+import org.jellyfin.sdk.model.api.Video3dFormat
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,6 +39,7 @@ class RefreshRateService
             stream: MediaStream,
             switchRefreshRate: Boolean,
             switchResolution: Boolean,
+            video3dFormat: Video3dFormat? = null,
         ) = withContext(WholphinDispatchers.IO) {
             if (!switchRefreshRate && !switchResolution) {
                 Timber.v("Not switching either refresh rate nor resolution")
@@ -65,12 +67,19 @@ class RefreshRateService
                 Timber.w("Video stream missing required info: width=%s, height=%s, frameRate=%s", width, height, frameRate)
                 return@withContext
             }
-            Timber.d("Getting refresh rate for: width=%s, height=%s, frameRate=%s", width, height, frameRate)
+            val (displayedWidth, displayedHeight) = displayedVideoSize(width, height, video3dFormat)
+            Timber.d(
+                "Getting refresh rate for: width=%s, height=%s, frameRate=%s, video3dFormat=%s",
+                displayedWidth,
+                displayedHeight,
+                frameRate,
+                video3dFormat,
+            )
             val targetMode =
                 findDisplayMode(
                     displayModes = displayModes,
-                    streamWidth = width,
-                    streamHeight = height,
+                    streamWidth = displayedWidth,
+                    streamHeight = displayedHeight,
                     targetFrameRate = frameRate,
                     refreshRateSwitch = switchRefreshRate,
                     resolutionSwitch = switchResolution,
@@ -145,6 +154,27 @@ class RefreshRateService
         }
 
         companion object {
+            /**
+             * The size of the picture that is actually shown on the display.
+             *
+             * Full frame 3D packs both eyes into one frame at their native size, so the coded
+             * size is twice the size of the picture the display shows. Mode selection has to use
+             * the displayed size, otherwise a 3840x1080 full side-by-side stream can never match
+             * any mode on a 1080p display and no switch happens at all.
+             *
+             * Half formats are already stored at the displayed size and are left alone.
+             */
+            fun displayedVideoSize(
+                width: Int,
+                height: Int,
+                video3dFormat: Video3dFormat?,
+            ): Pair<Int, Int> =
+                when (video3dFormat) {
+                    Video3dFormat.FULL_SIDE_BY_SIDE -> width / 2 to height
+                    Video3dFormat.FULL_TOP_AND_BOTTOM -> width to height / 2
+                    else -> width to height
+                }
+
             /**
              * Find the best display mode for the given stream & preferences
              *

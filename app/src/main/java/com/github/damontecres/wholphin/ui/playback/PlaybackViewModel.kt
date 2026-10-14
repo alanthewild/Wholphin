@@ -799,6 +799,7 @@ class PlaybackViewModel
                                     stream = stream,
                                     switchRefreshRate = prefs.refreshRateSwitching,
                                     switchResolution = prefs.resolutionSwitching,
+                                    video3dFormat = source.video3dFormat,
                                 )
                             }
                     }
